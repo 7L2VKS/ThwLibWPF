@@ -5,8 +5,344 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ThwLib"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
+        xmlns:wf="clr-namespace:System.Windows.Forms;assembly=System.Windows.Forms"
+        xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+        Title="MainWindow" SizeToContent="WidthAndHeight">
+    <Window.Resources>
+        <local:EnumToBooleanConverter x:Key="EnumToBooleanConverter" />
 
-    </Grid>
+        <Style TargetType="{x:Type Button}">
+            <Setter Property="Background" Value="Snow" />
+            <Setter Property="Padding" Value="6,2" />
+        </Style>
+    </Window.Resources>
+    <StackPanel Margin="16">
+
+        <!-- Top Pane -->
+        <StackPanel Orientation="Horizontal">
+            <RadioButton Name="InputWindow" Content="入力ウィンドウ" VerticalAlignment="Center"
+                         IsChecked="{Binding TargetWindow, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Input}"/>
+            <RadioButton Name="EditWindow" Content="修正ウィンドウ" VerticalAlignment="Center" Margin="10,0,0,0"
+                         IsChecked="{Binding TargetWindow, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Edit}"/>
+            <Border BorderThickness="1" BorderBrush="LightGray" IsEnabled="{Binding IsChecked, ElementName=EditWindow}" Padding="10, 5" Margin="10,0,0,0">
+                <StackPanel Orientation="Horizontal">
+                    <Button Content="表示" Command="{Binding ExecuteOpeCommand}" CommandParameter="ShowRecOnEdit" VerticalAlignment="Center"/>
+                    <WindowsFormsHost Width="64" VerticalAlignment="Center" Margin="8,0,0,0">
+                        <wf:NumericUpDown Maximum="99999" Minimum="1"/>
+                        <i:Interaction.Behaviors>
+                            <local:NumericUpDownBehavior Value="{Binding RecNumOnEdit, Mode=TwoWay}"/>
+                        </i:Interaction.Behaviors>
+                    </WindowsFormsHost>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+
+        <!-- Left and Right Pane -->
+        <StackPanel Orientation="Horizontal">
+
+            <!-- Left Pane (データ入力・データ取得・情報取得) -->
+            <StackPanel>
+                <GroupBox Header="データ入力" Padding="5,8">
+                    <GroupBox.Resources>
+                        <Style TargetType="{x:Type Button}">
+                            <Setter Property="Background" Value="LightYellow" />
+                            <Setter Property="Padding" Value="6,2" />
+                        </Style>
+                        <Style TargetType="{x:Type TextBox}">
+                            <Setter Property="Height" Value="16pt" />
+                        </Style>
+                    </GroupBox.Resources>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Call -->
+                        <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal" Margin="10,4,0,0">
+                            <Button Content="Call" Command="{Binding ExecuteSetCommand}" CommandParameter="Call"/>
+                            <CheckBox Content="DX" IsChecked="{Binding SetDX}" Command="{Binding ExecuteSetCommand}" CommandParameter="DX" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                        </StackPanel>
+                        <TextBox Text="{Binding SetCall, UpdateSourceTrigger=PropertyChanged}" CharacterCasing="Upper" Grid.Row="2" Grid.Column="0" Width="80" VerticalAlignment="Center" Margin="10,4,0,0"/>
+
+                        <!-- Date & Time -->
+                        <Button Content="Date &amp; Time" Command="{Binding ExecuteSetCommand}" CommandParameter="DateTime" Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2" Margin="8,0,0,0"/>
+                        <Button Content="Date" Command="{Binding ExecuteSetCommand}" CommandParameter="Date" Grid.Row="1" Grid.Column="1" Margin="8,4,0,0"/>
+                        <Button Content="Time" Command="{Binding ExecuteSetCommand}" CommandParameter="Time" Grid.Row="1" Grid.Column="2" Margin="4,4,0,0"/>
+                        <CheckBox Content="UTC" IsChecked="{Binding SetUTC}" Command="{Binding ExecuteSetCommand}" CommandParameter="UTC" Grid.Row="1" Grid.Column="3" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                        <WindowsFormsHost Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3" Width="130" Margin="8,4,0,0">
+                            <wf:DateTimePicker Format="{x:Static wf:DateTimePickerFormat.Custom}" CustomFormat="yy/MM/dd HH:mm:ss"/>
+                            <i:Interaction.Behaviors>
+                                <local:DateTimePickerBehavior Value="{Binding SetDateTime, Mode=TwoWay}" />
+                            </i:Interaction.Behaviors>
+                        </WindowsFormsHost>
+
+                        <!-- His ... QSL -->
+                        <Button Content="His" Command="{Binding ExecuteSetCommand}" CommandParameter="His" Grid.Row="1" Grid.Column="4" Margin="8,4,0,0"/>
+                        <TextBox Text="{Binding SetHis, UpdateSourceTrigger=PropertyChanged}" CharacterCasing="Upper" Grid.Row="2" Grid.Column="4" Width="30" VerticalAlignment="Center" Margin="8,4,0,0"/>
+                        <Button Content="My" Command="{Binding ExecuteSetCommand}" CommandParameter="My" Grid.Row="1" Grid.Column="5" Margin="8,4,0,0"/>
+                        <TextBox Text="{Binding SetMy, UpdateSourceTrigger=PropertyChanged}" CharacterCasing="Upper" Grid.Row="2" Grid.Column="5" Width="30" VerticalAlignment="Center" Margin="8,4,0,0"/>
+                        <Button Content="Freq" Command="{Binding ExecuteSetCommand}" CommandParameter="Freq" Grid.Row="1" Grid.Column="6" Margin="8,4,0,0"/>
+                        <TextBox Text="{Binding SetFreq, UpdateSourceTrigger=PropertyChanged}" CharacterCasing="Upper" Grid.Row="2" Grid.Column="6" Width="56" VerticalAlignment="Center" Margin="8,4,0,0"/>
+                        <Button Content="Mode" Command="{Binding ExecuteSetCommand}" CommandParameter="Mode" Grid.Row="1" Grid.Column="7" Margin="8,4,0,0"/>
+                        <TextBox Text="{Binding SetMode, UpdateSourceTrigger=PropertyChanged}" CharacterCasing="Upper" Grid.Row="2" Grid.Column="7" Width="56" VerticalAlignment="Center" Margin="8,4,0,0"/>
+                        <Button Content="Code" Command="{Binding ExecuteSetCommand}" CommandParameter="Code" Grid.Row="1" Grid.Column="8" Margin="8,4,0,0"/>
+                        <TextBox Text="{Binding SetCode, UpdateSourceTrigger=PropertyChanged}" CharacterCasing="Upper" Grid.Row="2" Grid.Column="8" Width="56" VerticalAlignment="Center" Margin="8,4,0,0"/>
+                        <Button Content="GL" Command="{Binding ExecuteSetCommand}" CommandParameter="GL" Grid.Row="1" Grid.Column="9" Margin="8,4,0,0"/>
+                        <TextBox Text="{Binding SetGL, UpdateSourceTrigger=PropertyChanged}" CharacterCasing="Upper" Grid.Row="2" Grid.Column="9" Width="64" VerticalAlignment="Center" Margin="8,4,0,0"/>
+                        <Button Content="QSL" Command="{Binding ExecuteSetCommand}" CommandParameter="QSL" Grid.Row="0" Grid.Column="10" Grid.ColumnSpan="3" Margin="8,0,0,0"/>
+                        <Button Content="J" Command="{Binding ExecuteSetCommand}" CommandParameter="J" Grid.Row="1" Grid.Column="10" Padding="0,0" Margin="8,4,0,0"/>
+                        <TextBox Text="{Binding SetJ, UpdateSourceTrigger=PropertyChanged}" MaxLength="1" Grid.Row="2" Grid.Column="10" Width="14" VerticalAlignment="Center" Margin="8,4,0,0"/>
+                        <Button Content="S" Command="{Binding ExecuteSetCommand}" CommandParameter="S" Grid.Row="1" Grid.Column="11" Padding="0,0" Margin="2,4,0,0"/>
+                        <TextBox Text="{Binding SetS, UpdateSourceTrigger=PropertyChanged}" MaxLength="1" Grid.Row="2" Grid.Column="11" Width="14" VerticalAlignment="Center" Margin="2,4,0,0"/>
+                        <Button Content="R" Command="{Binding ExecuteSetCommand}" CommandParameter="R" Grid.Row="1" Grid.Column="12" Padding="0,0" Margin="2,4,0,0"/>
+                        <TextBox Text="{Binding SetR, UpdateSourceTrigger=PropertyChanged}" MaxLength="1" Grid.Row="2" Grid.Column="12" Width="14" VerticalAlignment="Center" Margin="2,4,0,0"/>
+
+                        <!-- His Name ... DxEntry自動入力 -->
+                        <Button Content="His Name" Command="{Binding ExecuteSetCommand}" CommandParameter="HisName" Grid.Row="3" Grid.Column="0" Margin="10,8,0,0"/>
+                        <TextBox Text="{Binding SetHisName, UpdateSourceTrigger=PropertyChanged}" Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" Margin="8,8,0,0"/>
+                        <Button Content="QTH" Command="{Binding ExecuteSetCommand}" CommandParameter="QTH" Grid.Row="3" Grid.Column="3" Margin="8,8,0,0"/>
+                        <TextBox Text="{Binding SetQTH, UpdateSourceTrigger=PropertyChanged}" Grid.Row="3" Grid.Column="4" Grid.ColumnSpan="5" Margin="8,8,0,0"/>
+                        <CheckBox Content="DXEntity自動入力" IsChecked="{Binding AutoDXEntity}" Command="{Binding ExecuteSetCommand}" CommandParameter="AutoDXEntity" Grid.Row="3" Grid.Column="9" Grid.ColumnSpan="4" Margin="8,8,0,0"/>
+
+                        <!-- Remarks1 ... All -->
+                        <Button Content="Remarks1" Command="{Binding ExecuteSetCommand}" CommandParameter="Remarks1" Grid.Row="4" Grid.Column="0" Margin="10,8,0,0"/>
+                        <TextBox Text="{Binding SetRemarks1, UpdateSourceTrigger=PropertyChanged}" Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="8" Margin="8,8,0,0"/>
+                        <Button Content="Remarks2" Command="{Binding ExecuteSetCommand}" CommandParameter="Remarks2" Grid.Row="5" Grid.Column="0" Margin="10,8,0,0"/>
+                        <TextBox Text="{Binding SetRemarks2, UpdateSourceTrigger=PropertyChanged}" Grid.Row="5" Grid.Column="1" Grid.ColumnSpan="8" Margin="8,8,0,0"/>
+                        <Button Content="All" Command="{Binding ExecuteSetCommand}" CommandParameter="All" Grid.Row="6" Grid.Column="0" Margin="10,8,0,0"/>
+
+                        <!-- CQ ... 2 -->
+                        <StackPanel Grid.Row="0" Grid.Column="8" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,10,0">
+                            <CheckBox Content="CQ" IsChecked="{Binding SetCQ}" Command="{Binding ExecuteSetCommand}" CommandParameter="CQ" VerticalAlignment="Center"/>
+                            <CheckBox Content="1" IsChecked="{Binding Set1}" Command="{Binding ExecuteSetCommand}" CommandParameter="1" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                            <CheckBox Content="2" IsChecked="{Binding Set2}" Command="{Binding ExecuteSetCommand}" CommandParameter="2" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                        </StackPanel>
+
+                        <!-- Move Focus, Press Enter -->
+                        <StackPanel Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="12" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,8,0,0">
+                            <CheckBox Content="Move Focus" IsChecked="{Binding Focus}" VerticalAlignment="Center"/>
+                            <CheckBox Content="Press Enter" IsChecked="{Binding Enter}" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                        </StackPanel>
+                    </Grid>
+                </GroupBox>
+
+                <GroupBox Header="データ取得" Padding="5,8" Margin="0,10,0,0">
+                    <GroupBox.Resources>
+                        <Style TargetType="{x:Type Button}">
+                            <Setter Property="Background" Value="LightCyan"/>
+                            <Setter Property="Padding" Value="6,2" />
+                        </Style>
+                        <Style TargetType="{x:Type TextBox}">
+                            <Setter Property="IsReadOnly" Value="True"/>
+                            <Setter Property="Height" Value="16pt" />
+                        </Style>
+                        <Style TargetType="{x:Type CheckBox}">
+                            <Setter Property="IsHitTestVisible" Value="False"/>
+                        </Style>
+                    </GroupBox.Resources>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Call -->
+                        <StackPanel Grid.Row="1" Grid.Column="0" Orientation="Horizontal" Margin="10,4,0,0">
+                            <Button Content="Call" Command="{Binding ExecuteGetCommand}" CommandParameter="Call"/>
+                            <CheckBox Content="DX" IsChecked="{Binding GetDX, Mode=OneWay}" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                        </StackPanel>
+                        <TextBox Text="{Binding GetCall, Mode=OneWay}" Grid.Row="2" Grid.Column="0" Width="80" VerticalAlignment="Center" Margin="10,4,0,0"/>
+
+                        <!-- Date & Time -->
+                        <Button Content="Date &amp; Time" Command="{Binding ExecuteGetCommand}" CommandParameter="DateTime" Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2" Margin="8,0,0,0"/>
+                        <StackPanel Grid.Row ="0" Grid.Column="3" Grid.ColumnSpan="4" Orientation="Horizontal" Margin="10,0,0,0">
+                            <RadioButton Content="AsIs" VerticalAlignment="Center"
+                                         IsChecked="{Binding SelectedTimeZone, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=AsIs}"/>
+                            <RadioButton Content="As JST" VerticalAlignment="Center" Margin="10,0,0,0"
+                                         IsChecked="{Binding SelectedTimeZone, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=AsJST}"/>
+                            <RadioButton Content="As UTC" VerticalAlignment="Center" Margin="10,0,0,0"
+                                         IsChecked="{Binding SelectedTimeZone, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=AsUTC}"/>
+                        </StackPanel>
+                        <Button Content="Date" Command="{Binding ExecuteGetCommand}" CommandParameter="Date" Grid.Row="1" Grid.Column="1" Margin="8,4,0,0"/>
+                        <Button Content="Time" Command="{Binding ExecuteGetCommand}" CommandParameter="Time" Grid.Row="1" Grid.Column="2" Margin="4,4,0,0"/>
+                        <Grid Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3" Margin="8,4,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="7*"/>
+                                <ColumnDefinition Width="5*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox Text="{Binding GetDate, Mode=OneWay}" Grid.Row="0" Grid.Column="0"/>
+                            <TextBox Text="{Binding GetTime, Mode=OneWay}" Grid.Row="0" Grid.Column="1" Margin="4,0,0,0"/>
+                        </Grid>
+                        
+                        <!-- His ... QSL -->
+                        <Button Content="His" Command="{Binding ExecuteGetCommand}" CommandParameter="His" Grid.Row="1" Grid.Column="4" Margin="8,4,0,0"/>
+                        <TextBox Text="{Binding GetHis, Mode=OneWay}" Grid.Row="2" Grid.Column="4" Width="30" VerticalAlignment="Center" Margin="8,4,0,0"/>
+                        <Button Content="My" Command="{Binding ExecuteGetCommand}" CommandParameter="My" Grid.Row="1" Grid.Column="5" Margin="8,4,0,0"/>
+                        <TextBox Text="{Binding GetMy, Mode=OneWay}" Grid.Row="2" Grid.Column="5" Width="30" VerticalAlignment="Center" Margin="8,4,0,0"/>
+                        <Button Content="Freq" Command="{Binding ExecuteGetCommand}" CommandParameter="Freq" Grid.Row="1" Grid.Column="6" Margin="8,4,0,0"/>
+                        <TextBox Text="{Binding GetFreq, Mode=OneWay}" Grid.Row="2" Grid.Column="6" Width="56" VerticalAlignment="Center" Margin="8,4,0,0"/>
+                        <Button Content="Mode" Command="{Binding ExecuteGetCommand}" CommandParameter="Mode" Grid.Row="1" Grid.Column="7" Margin="8,4,0,0"/>
+                        <TextBox Text="{Binding GetMode, Mode=OneWay}" Grid.Row="2" Grid.Column="7" Width="56" VerticalAlignment="Center" Margin="8,4,0,0"/>
+                        <Button Content="Code" Command="{Binding ExecuteGetCommand}" CommandParameter="Code" Grid.Row="1" Grid.Column="8" Margin="8,4,0,0"/>
+                        <TextBox Text="{Binding GetCode, Mode=OneWay}" Grid.Row="2" Grid.Column="8" Width="56" VerticalAlignment="Center" Margin="8,4,0,0"/>
+                        <Button Content="GL" Command="{Binding ExecuteGetCommand}" CommandParameter="GL" Grid.Row="1" Grid.Column="9" Margin="8,4,0,0"/>
+                        <TextBox Text="{Binding GetGL, Mode=OneWay}" Grid.Row="2" Grid.Column="9" Width="64" VerticalAlignment="Center" Margin="8,4,0,0"/>
+                        <Button Content="QSL" Command="{Binding ExecuteGetCommand}" CommandParameter="QSL" Grid.Row="0" Grid.Column="10" Grid.ColumnSpan="3" Margin="8,0,0,0"/>
+                        <Button Content="J" Command="{Binding ExecuteGetCommand}" CommandParameter="J" Grid.Row="1" Grid.Column="10" Padding="0,0" Margin="8,4,0,0"/>
+                        <TextBox Text="{Binding GetJ, Mode=OneWay}" Grid.Row="2" Grid.Column="10" Width="14" VerticalAlignment="Center" Margin="8,4,0,0"/>
+                        <Button Content="S" Command="{Binding ExecuteGetCommand}" CommandParameter="S" Grid.Row="1" Grid.Column="11" Padding="0,0" Margin="2,4,0,0"/>
+                        <TextBox Text="{Binding GetS, Mode=OneWay}" Grid.Row="2" Grid.Column="11" Width="14" VerticalAlignment="Center" Margin="2,4,0,0"/>
+                        <Button Content="R" Command="{Binding ExecuteGetCommand}" CommandParameter="R" Grid.Row="1" Grid.Column="12" Padding="0,0" Margin="2,4,0,0"/>
+                        <TextBox Text="{Binding GetR, Mode=OneWay}" Grid.Row="2" Grid.Column="12" Width="14" VerticalAlignment="Center" Margin="2,4,0,0"/>
+
+                        <!-- His Name, QTH -->
+                        <Button Content="His Name" Command="{Binding ExecuteGetCommand}" CommandParameter="HisName" Grid.Row="3" Grid.Column="0" Margin="10,8,0,0"/>
+                        <TextBox Grid.Row="3" Text="{Binding GetHisName, Mode=OneWay}" Grid.Column="1" Grid.ColumnSpan="2" Margin="8,8,0,0"/>
+                        <Button Content="QTH" Command="{Binding ExecuteGetCommand}" CommandParameter="QTH" Grid.Row="3" Grid.Column="3" Margin="8,8,0,0"/>
+                        <TextBox Grid.Row="3" Text="{Binding GetQTH, Mode=OneWay}" Grid.Column="4" Grid.ColumnSpan="5" Margin="8,8,0,0"/>
+
+                        <!-- Remarks1, Remarks2 -->
+                        <Button Content="Remarks1" Command="{Binding ExecuteGetCommand}" CommandParameter="Remarks1" Grid.Row="4" Grid.Column="0" Margin="10,8,0,0"/>
+                        <TextBox Grid.Row="4" Text="{Binding GetRemarks1, Mode=OneWay}" Grid.Column="1" Grid.ColumnSpan="8" Margin="8,8,0,0"/>
+                        <Button Content="Remarks2" Command="{Binding ExecuteGetCommand}" CommandParameter="Remarks2" Grid.Row="5" Grid.Column="0" Margin="10,8,0,0"/>
+                        <TextBox Grid.Row="5" Text="{Binding GetRemarks2, Mode=OneWay}" Grid.Column="1" Grid.ColumnSpan="8" Margin="8,8,0,0"/>
+
+                        <!-- All ... レコード番号指定 -->
+                        <Border BorderThickness="1" BorderBrush="LightGray" Grid.Row="6" Grid.Column="0" Grid.ColumnSpan="13" Padding="9,5" Margin="0,8,0,0">
+                            <StackPanel Orientation="Horizontal">
+                                <Button Content="All" Command="{Binding ExecuteGetCommand}" CommandParameter="All" Width="80" VerticalAlignment="Center"/>
+                                <RadioButton Content="入力・修正ウィンドウ内容" VerticalAlignment="Center" Margin="10,0,0,0"
+                                             IsChecked="{Binding SelectedRecord, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=InputEdit}"/>
+                                <RadioButton Content="メインウィンドウ選択レコード" VerticalAlignment="Center" Margin="10,0,0,0"
+                                             IsChecked="{Binding SelectedRecord, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Main}"/>
+                                <RadioButton Name="RecordNumber" Content="レコード番号指定" VerticalAlignment="Center" Margin="10,0,0,0"
+                                             IsChecked="{Binding SelectedRecord, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Number}"/>
+                                <WindowsFormsHost IsEnabled="{Binding IsChecked, ElementName=RecordNumber}" Width="64" VerticalAlignment="Center" Margin="8,0,0,0">
+                                    <wf:NumericUpDown Maximum="99999" Minimum="1"/>
+                                    <i:Interaction.Behaviors>
+                                        <local:NumericUpDownBehavior Value="{Binding RecNumToGet, Mode=TwoWay}"/>
+                                    </i:Interaction.Behaviors>
+                                </WindowsFormsHost>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- CQ ... 2 -->
+                        <Button Content="Flags" Command="{Binding ExecuteGetCommand}" CommandParameter="CQ12" Padding="6,0" Grid.Row="0" Grid.Column="7" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                        <StackPanel Grid.Row="0" Grid.Column="8" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,10,0">
+                            <CheckBox Content="CQ" IsChecked="{Binding GetCQ, Mode=OneWay}" VerticalAlignment="Center" Margin="16,0,0,0"/>
+                            <CheckBox Content="1" IsChecked="{Binding Get1, Mode=OneWay}" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                            <CheckBox Content="2" IsChecked="{Binding Get2, Mode=OneWay}" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                        </StackPanel>
+                    </Grid>
+                </GroupBox>
+
+                <!-- 情報取得 -->
+                <Grid Margin="0,10,0,0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <Label Content="情報取得" Grid.Column="0" VerticalAlignment="Center"/>
+                    <ComboBox ItemsSource="{Binding InfoItems}" SelectedItem="{Binding SelectedInfoItem}" DisplayMemberPath="Label" SelectedIndex="0" Grid.Column="1" Width="200" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                    <Button Content="実行" Command="{Binding ExecuteGetCommand}" CommandParameter="Info" Grid.Column="2" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                    <StackPanel Grid.Column="3" Margin="60,0,0,0">
+                        <Label Content="UI Unblocking Checker" FontSize="8pt" Padding="0"/>
+                        <ProgressBar IsIndeterminate="True" Height="10"/>
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
+
+            <!-- Right Pane -->
+            <Grid Margin="10,10,0,20">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+
+                <!-- Upper -->
+                <StackPanel Grid.Row="0" Grid.Column="0" >
+                    <Button Content="Clear" Command="{Binding ExecuteOpeCommand}" CommandParameter="Clear" Width="80" />
+                    <Border BorderThickness="1" BorderBrush="LightGray" Padding="5,16" Margin="0,16,0,0">
+                        <StackPanel>
+                            <Button Content="Save" Command="{Binding ExecuteOpeCommand}" CommandParameter="Save" Width="80"/>
+                            <GroupBox Header="Save時確認" IsEnabled="{Binding IsChecked, ElementName=InputWindow}" Margin="0,10,0,0" Padding="5">
+                                <StackPanel>
+                                    <RadioButton Content="設定に従う"
+                                                 IsChecked="{Binding SaveOption, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Setting}"/>
+                                    <RadioButton Content="表示" Margin="0,4,0,0"
+                                                 IsChecked="{Binding SaveOption, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=Show}"/>
+                                    <RadioButton Content="非表示" Margin="0,4,0,0"
+                                                 IsChecked="{Binding SaveOption, Converter={StaticResource EnumToBooleanConverter}, ConverterParameter=NoShow}"/>
+                                </StackPanel>
+                            </GroupBox>
+                            <Label Content="Give upタイマー" Margin="0,10,0,0" Padding="0,0"/>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                <WindowsFormsHost Width="48">
+                                    <wf:NumericUpDown x:Name="zzzz" Value="0" Maximum="999" Minimum="0"/>
+                                    <i:Interaction.Behaviors>
+                                        <local:NumericUpDownBehavior Value="{Binding GiveUpTime, Mode=TwoWay}"/>
+                                    </i:Interaction.Behaviors>
+                                </WindowsFormsHost>
+                                <Label Content="秒"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                    <Button Content="Dup (PF3)" Command="{Binding ExecuteOpeCommand}" CommandParameter="DupCheck" Width="80" Margin="0,16,0,0"/>
+                    <Button Content="TEST" Width="80" IsEnabled="False" Margin="0,16,0,0"/>
+                </StackPanel>
+
+                <!-- Lower -->
+                <StackPanel Grid.Row="1" Grid.Column="0" VerticalAlignment="Bottom">
+                    <Button Content="最小化" Command="{Binding ExecuteOpeCommand}" CommandParameter="Minimize" Width="80"/>
+                    <Button Content="リストア" Command="{Binding ExecuteOpeCommand}" CommandParameter="Restore" Width="80" Margin="0,16,0,0"/>
+                </StackPanel>
+            </Grid>
+        </StackPanel>
+    </StackPanel>
 </Window>
