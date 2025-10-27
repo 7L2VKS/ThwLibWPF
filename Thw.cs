@@ -146,7 +146,10 @@ namespace ThwLib
         public int GiveupTime { get; set; } = 0;
 
         /// <value>Save処理 (<c>true</c> - 処理中、 <c>false</c> - 非処理中)</value>
-        public bool RunningSave { get; private set; } = false;
+        private readonly SemaphoreSlim _savingSemaphore = new(1, 1);
+        public bool Saving {
+            get => _savingSemaphore.CurrentCount == 0;
+        }
 
         // Fields
         private readonly Encoding _encoding;
@@ -616,14 +619,7 @@ namespace ThwLib
         /// </remarks>
         /// <returns>入力または修正ウィンドウのHandleをResultとするTask</returns>
         /// <exception cref="ThwException">THWアクセス・処理エラー</exception>
-        public Task<IntPtr> SaveAsync()
-        {
-            if (RunningSave)
-            {
-                throw new ThwException(ThwError.FunctionAlreadyRunning);
-            }
-            return SaveAsync(SelectCommand(CMD_SAVE));
-        }
+        public Task<IntPtr> SaveAsync() => SaveAsync(SelectCommand(CMD_SAVE));
 
         /// <summary>
         /// データ登録（入力ウィンドウ Saveボタン押下）（非同期）
@@ -651,22 +647,19 @@ namespace ThwLib
             {
                 throw new ThwException(ThwError.NotSupportedFunction);
             }
-            if (RunningSave)
-            {
-                throw new ThwException(ThwError.FunctionAlreadyRunning);
-            }
             return SaveAsync(CMD_SAVE + (confirm ? OP_SAVEBOX_ON : OP_SAVEBOX_OFF));
         }
 
         private async Task<IntPtr> SaveAsync(UInt64 command)
         {
             IntPtr hWnd;
+            Task<IntPtr>? task = null;
 
-            Task<IntPtr> task = RunSaveAsync(command);
             using (_ctsTimeout = new CancellationTokenSource())
             {
                 try
                 {
+                    task = RunSaveAsync(command);
                     await Task.Delay(GiveupTime != 0 ? GiveupTime * 1000 : -1, _ctsTimeout.Token);
 
                     // Save処理が完了せず、Delay()がキャンセルされなかった（Save処理完了時にRunSaveAsync()内でSaveEventイベント発生）
@@ -677,7 +670,7 @@ namespace ThwLib
                     // Save処理が完了し、Delay()がキャンセルされた
                     // ・task.Resultがthrowする例外はAggregateExceptionとなるので、ExceptionDispatchInfoを使用している
                     // ・RunSaveAsync()内でExceptionをcatchしているので、task.Resultから例外がthrowされることはない
-                    hWnd = task.Result;
+                    hWnd = task!.Result;
                     _exceptionDispatch?.Throw();
                 }
                 finally
@@ -696,17 +689,23 @@ namespace ThwLib
 
             _exceptionDispatch = null;
 
-            try
+            if (await _savingSemaphore.WaitAsync(0))
             {
-                RunningSave = true;
-                hWnd = await Task.Run(() => SendCommand(command));
+                try
+                {
+                    hWnd = await Task.Run(() => SendCommand(command));
+                }
+                catch (Exception ex)
+                {
+                    exception = ex;
+                    _exceptionDispatch = ExceptionDispatchInfo.Capture(ex);
+                }
+                _savingSemaphore.Release();
             }
-            catch (Exception ex)
+            else
             {
-                exception = ex;
-                _exceptionDispatch = ExceptionDispatchInfo.Capture(ex);
+                _exceptionDispatch = ExceptionDispatchInfo.Capture(new ThwException(ThwError.FunctionAlreadyRunning));
             }
-            RunningSave = false;
 
             if (_ctsTimeout == null)
             {

@@ -416,7 +416,7 @@ namespace ThwLib
             }
             finally
             {
-                Saving = _thw.RunningSave;
+                Saving = _thw.Saving;
             }
         }
 
@@ -424,7 +424,7 @@ namespace ThwLib
         // 呼び出されるイベントハンドラ
         private void SaveResult(object sender, ThwSaveEventArgs e)
         {
-            Saving = false;
+            Saving = _thw.Saving;
 
             _hWnd = e.HWnd;
             ThrownException = e.Exception;
